@@ -39,9 +39,13 @@ def add_ann(announcement):
 
 class AnnView(MethodView):
 
-    def get(self, ann_id):
-        announcement = get_ann_by_id(ann_id)
-        return jsonify(announcement.dict)
+    def get(self, ann_id = None):
+        if ann_id is None:
+            announcements = request.session.query(Ann).all()
+            return jsonify([a.dict for a in announcements])
+        else:
+            announcement = get_ann_by_id(ann_id)
+            return jsonify(announcement.dict)
 
     def post(self):
         json_data = validate_json(request.json, AnnouncementCreate)
@@ -72,7 +76,7 @@ class AnnView(MethodView):
         return jsonify({'message': 'Announcement deleted'})
 
 ann_view = AnnView.as_view('ann_view')
-app.add_url_rule('/api/v1/announcements', view_func=ann_view, methods=['POST'])
+app.add_url_rule('/api/v1/announcements', view_func=ann_view, methods=['POST', 'GET'])
 app.add_url_rule('/api/v1/announcements/<int:ann_id>', view_func=ann_view,
                  methods=['GET', 'PATCH', 'DELETE'])
 app.run()
